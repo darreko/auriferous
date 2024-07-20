@@ -26,7 +26,7 @@ class AuriferousGame extends FlameGame {
 
   int numDynamites = 3;
   int numMineCarts = 3;
-  int numShivs = 3;
+  int numShivs = 0;
   int numPickaxes = 3;
   int numLunchboxes = 3;
 
@@ -182,37 +182,22 @@ class AuriferousGame extends FlameGame {
         helpfulText.text = 'Look at them dice babay!';
         break;
       case TurnState.choosePower:
-        add(dynamiteButton);
-        add(mineCartButton);
-        add(shivButton);
-        add(pickAxeButton);
+        addAvailablePowerButtons();
         helpfulText.text =
             'Choose one of your powers to use at the bottom of the screen!';
         break;
       case TurnState.powerDynamite:
-        tryRemove(dynamiteButton);
-        tryRemove(mineCartButton);
-        tryRemove(shivButton);
-        tryRemove(pickAxeButton);
+        removePowerButtons();
 
         helpfulText.text = 'Click on a die you'
             'd like to reroll! You have ${numDynamites - usedDynamites} remaining!';
 
       case TurnState.powerMineCart:
-        tryRemove(dynamiteButton);
-        tryRemove(mineCartButton);
-        tryRemove(shivButton);
-        tryRemove(pickAxeButton);
+        removePowerButtons();
       case TurnState.powerShiv:
-        tryRemove(dynamiteButton);
-        tryRemove(mineCartButton);
-        tryRemove(shivButton);
-        tryRemove(pickAxeButton);
+        removePowerButtons();
       case TurnState.powerPickaxe:
-        tryRemove(dynamiteButton);
-        tryRemove(mineCartButton);
-        tryRemove(shivButton);
-        tryRemove(pickAxeButton);
+        removePowerButtons();
         break;
       case TurnState.sendMinerOrCollectGold:
         helpfulText.text =
@@ -220,6 +205,28 @@ class AuriferousGame extends FlameGame {
         break;
       default:
     }
+  }
+
+  void addAvailablePowerButtons() {
+    if (numDynamites > usedDynamites) {
+      add(dynamiteButton);
+    }
+    if (numMineCarts > usedMineCarts) {
+      add(mineCartButton);
+    }
+    if (numShivs > usedShivs) {
+      add(shivButton);
+    }
+    if (numPickaxes > usedPickaxes) {
+      add(pickAxeButton);
+    }
+  }
+
+  void removePowerButtons() {
+    tryRemove(dynamiteButton);
+    tryRemove(mineCartButton);
+    tryRemove(shivButton);
+    tryRemove(pickAxeButton);
   }
 
   void tryRemove(Component component) {
