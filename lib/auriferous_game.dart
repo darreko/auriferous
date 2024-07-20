@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:auriferous/dice_pool_component.dart';
-import 'package:auriferous/die_component.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
@@ -13,14 +12,12 @@ class AuriferousGame extends FlameGame {
   late SpriteComponent board;
   late SpriteComponent dwarf;
   late TextComponent goldCountText;
-  // late TextComponent dicePoolText;
   late DicePoolComponent dicePool;
   late SpriteButtonComponent rollButton;
 
   @override
   bool debugMode = false;
 
-  // List<int> dicePool = List.empty();
   List<int> mineCartDice = List.empty(growable: true);
   int mineCartGold = 0;
   int mineGoldRemaining = 50;
@@ -52,13 +49,6 @@ class AuriferousGame extends FlameGame {
       );
       add(goldCountText);
 
-      // dicePoolText = TextComponent(
-      //   text: 'Dice:',
-      //   position: Vector2(guiSize.x / 5, 0),
-      //   size: Vector2(guiSize.x / 2.5, guiSize.y),
-      // );
-      // add(dicePoolText);
-
       dicePool = DicePoolComponent(
         position: Vector2(guiSize.x / 10, 0),
         size: Vector2(guiSize.x / 8, guiSize.y),
@@ -68,7 +58,6 @@ class AuriferousGame extends FlameGame {
       rollButton = SpriteButtonComponent(
         button: await loadSprite('roll_button.png'),
         buttonDown: await loadSprite('roll_button_pressed.png'),
-        // children: [TextComponent(text: 'Roll')],
         onPressed: () => roll(),
         position: Vector2((guiSize.x / 10) * 9, 0),
         size: Vector2(guiSize.x / 10, guiSize.y),
