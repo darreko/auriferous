@@ -1,16 +1,27 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:math';
 
+import 'package:auriferous/auriferous_game.dart';
+import 'package:auriferous/dice_pool_component.dart';
+import 'package:auriferous/enums.dart';
 import 'package:flame/components.dart';
+import 'package:flame/input.dart';
 
 class DieComponent extends PositionComponent {
+  late AuriferousGame game;
+  late DicePoolComponent dicePool;
   Map<int, Sprite> dieSprites = Map();
-  late SpriteComponent dieSpriteComponent;
+  late SpriteButtonComponent dieSpriteButtonComponent;
   int value = 1;
   bool isRolling = true;
   double rollSpeed = Random().nextDouble() * 2 + 4;
 
-  DieComponent(this.value, Vector2 position) {
+  DieComponent(
+      {required this.value,
+      required Vector2 position,
+      required this.game,
+      required this.dicePool}) {
     this.position = position;
   }
 
@@ -22,14 +33,16 @@ class DieComponent extends PositionComponent {
 
     final sprite = await Sprite.load('dice-six-faces-$value.png');
 
-    dieSpriteComponent =
+    dieSpriteButtonComponent =
         // SpriteComponent(sprite: dieSprites[value], size: Vector2.all(50));
-        SpriteComponent(
-            sprite: sprite,
+        SpriteButtonComponent(
+            button: sprite,
+            buttonDown: sprite,
+            onPressed: () => onPressedDie(),
             size: Vector2.all(50),
             position: Vector2(25, 25),
             anchor: Anchor.center);
-    add(dieSpriteComponent);
+    add(dieSpriteButtonComponent);
 
     return super.onLoad();
   }
@@ -37,13 +50,25 @@ class DieComponent extends PositionComponent {
   @override
   void update(double dt) {
     if (isRolling) {
-      dieSpriteComponent.angle += angle + dt * rollSpeed;
-      if (dieSpriteComponent.angle > 6.283) {
+      dieSpriteButtonComponent.angle += angle + dt * rollSpeed;
+
+      // 6.283 = 2 * pi = one rotation
+      if (dieSpriteButtonComponent.angle > 6.283) {
         isRolling = false;
-        dieSpriteComponent.angle = 0;
+        dieSpriteButtonComponent.angle = 0;
       }
     }
 
     super.update(dt);
+  }
+
+  onPressedDie() {
+    print('pressed on die $value');
+    switch (game.turnState) {
+      case TurnState.powerDynamite:
+        dicePool.reroll(this);
+        break;
+      default:
+    }
   }
 }
