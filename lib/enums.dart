@@ -10,4 +10,4 @@ enum TurnState {
   turnFinished,
 }
 
-enum Powers { dynamite, minecart, shiv, pickaxe }
+enum Powers { dynamite, minecart, shiv, pickaxe, lunchbox }

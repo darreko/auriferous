@@ -21,7 +21,8 @@ class DieComponent extends PositionComponent {
       {required this.value,
       required Vector2 position,
       required this.game,
-      required this.dicePool}) {
+      required this.dicePool,
+      this.isRolling = true}) {
     this.position = position;
   }
 
@@ -67,6 +68,10 @@ class DieComponent extends PositionComponent {
     switch (game.turnState) {
       case TurnState.powerDynamite:
         dicePool.reroll(this);
+        break;
+      case TurnState.powerMineCart:
+        game.saveDieInMineCart(value);
+        dicePool.removeDie(this);
         break;
       default:
     }

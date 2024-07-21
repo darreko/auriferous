@@ -19,18 +19,36 @@ class AuriferousGame extends FlameGame {
   late SpriteButtonComponent rollButton;
   late TurnState turnState;
 
-  late SpriteButtonComponent dynamiteButton;
-  late SpriteButtonComponent mineCartButton;
-  late SpriteButtonComponent shivButton;
-  late SpriteButtonComponent pickAxeButton;
+  late SpriteButtonComponent useDynamiteButton;
+  late SpriteButtonComponent useMineCartButton;
+  late SpriteButtonComponent useShivButton;
+  late SpriteButtonComponent usePickaxeButton;
+
+  late SpriteButtonComponent upgradeDynamiteButton;
+  late SpriteButtonComponent upgradeMineCartButton;
+  late SpriteButtonComponent upgradeShivButton;
+  late SpriteButtonComponent upgradePickaxeButton;
+  late SpriteButtonComponent upgradeLunchboxButton;
 
   late SpriteButtonComponent doneButton;
 
-  int numDynamites = 3;
-  int numMineCarts = 3;
+  Map<int, int> diceRequiredForDynamiteLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
+  Map<int, int> diceRequiredForMinecartLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
+  Map<int, int> diceRequiredForShivLevel = {1: 1, 2: 3, 3: 5, 4: 7, 5: 10};
+  Map<int, int> diceRequiredForPickaxeLevel = {1: 1, 2: 2, 3: 4, 4: 7, 5: 10};
+  Map<int, int> diceRequiredForLunchboxLevel = {1: 2, 2: 4, 3: 6, 4: 8, 5: 10};
+
+  int possibleUpgradeDepthDynamites = 0;
+  int possibleUpgradeDepthMineCarts = 0;
+  int possibleUpgradeDepthShivs = 0;
+  int possibleUpgradeDepthPickaxes = 0;
+  int possibleUpgradeDepthLunchboxes = 0;
+
+  int numDynamites = 0;
+  int numMineCarts = 0;
   int numShivs = 0;
-  int numPickaxes = 3;
-  int numLunchboxes = 3;
+  int numPickaxes = 0;
+  int numLunchboxes = 0;
 
   int usedDynamites = 0;
   int usedMineCarts = 0;
@@ -103,7 +121,7 @@ class AuriferousGame extends FlameGame {
 
       // add(dwarf);
 
-      dynamiteButton = SpriteButtonComponent(
+      useDynamiteButton = SpriteButtonComponent(
         button: await loadSprite('highlight_rect.png'),
         buttonDown: await loadSprite('highlight_rect.png'),
         onPressed: () => powerPressed(Powers.dynamite),
@@ -111,7 +129,15 @@ class AuriferousGame extends FlameGame {
         position: Vector2(20, 500),
       );
 
-      mineCartButton = SpriteButtonComponent(
+      upgradeDynamiteButton = SpriteButtonComponent(
+        button: await loadSprite('highlight_rect.png'),
+        buttonDown: await loadSprite('highlight_rect.png'),
+        onPressed: () => upgradePowerPressed(Powers.dynamite),
+        size: Vector2(170, 70),
+        position: Vector2(20, 200),
+      );
+
+      useMineCartButton = SpriteButtonComponent(
         button: await loadSprite('highlight_rect.png'),
         buttonDown: await loadSprite('highlight_rect.png'),
         onPressed: () => powerPressed(Powers.minecart),
@@ -119,7 +145,15 @@ class AuriferousGame extends FlameGame {
         position: Vector2(190, 500),
       );
 
-      shivButton = SpriteButtonComponent(
+      upgradeMineCartButton = SpriteButtonComponent(
+        button: await loadSprite('highlight_rect.png'),
+        buttonDown: await loadSprite('highlight_rect.png'),
+        onPressed: () => upgradePowerPressed(Powers.minecart),
+        size: Vector2(170, 70),
+        position: Vector2(190, 200),
+      );
+
+      useShivButton = SpriteButtonComponent(
         button: await loadSprite('highlight_rect.png'),
         buttonDown: await loadSprite('highlight_rect.png'),
         onPressed: () => powerPressed(Powers.shiv),
@@ -127,12 +161,36 @@ class AuriferousGame extends FlameGame {
         position: Vector2(360, 500),
       );
 
-      pickAxeButton = SpriteButtonComponent(
+      upgradeShivButton = SpriteButtonComponent(
+        button: await loadSprite('highlight_rect.png'),
+        buttonDown: await loadSprite('highlight_rect.png'),
+        onPressed: () => upgradePowerPressed(Powers.shiv),
+        size: Vector2(170, 70),
+        position: Vector2(360, 200),
+      );
+
+      usePickaxeButton = SpriteButtonComponent(
         button: await loadSprite('highlight_rect.png'),
         buttonDown: await loadSprite('highlight_rect.png'),
         onPressed: () => powerPressed(Powers.pickaxe),
         size: Vector2(170, 70),
         position: Vector2(530, 500),
+      );
+
+      upgradePickaxeButton = SpriteButtonComponent(
+        button: await loadSprite('highlight_rect.png'),
+        buttonDown: await loadSprite('highlight_rect.png'),
+        onPressed: () => upgradePowerPressed(Powers.pickaxe),
+        size: Vector2(170, 70),
+        position: Vector2(530, 200),
+      );
+
+      upgradeLunchboxButton = SpriteButtonComponent(
+        button: await loadSprite('highlight_rect.png'),
+        buttonDown: await loadSprite('highlight_rect.png'),
+        onPressed: () => upgradePowerPressed(Powers.lunchbox),
+        size: Vector2(170, 70),
+        position: Vector2(700, 200),
       );
 
       doneButton = SpriteButtonComponent(
@@ -142,7 +200,6 @@ class AuriferousGame extends FlameGame {
         size: Vector2(170, 70),
         position: Vector2(600, 60),
       );
-      //add(doneButton);
 
       setState(TurnState.beforeRoll);
     } catch (ex) {
@@ -157,7 +214,8 @@ class AuriferousGame extends FlameGame {
     final rolledValues = List.generate(5, (x) => r.nextInt(6) + 1);
     rolledValues.sort();
     dicePool.clear();
-    dicePool.addDiceByValue(rolledValues);
+    dicePool.addDiceByValue(rolledValues, mineCartDice);
+    mineCartDice.clear();
   }
 
   void powerPressed(Powers power) {
@@ -167,16 +225,39 @@ class AuriferousGame extends FlameGame {
         setState(TurnState.powerDynamite);
         break;
       case Powers.minecart:
-        setState(TurnState.powerDynamite);
+        setState(TurnState.powerMineCart);
         break;
       case Powers.shiv:
-        setState(TurnState.powerDynamite);
+        setState(TurnState.powerShiv);
         break;
       case Powers.pickaxe:
-        setState(TurnState.powerDynamite);
+        setState(TurnState.powerPickaxe);
         break;
       default:
     }
+  }
+
+  upgradePowerPressed(Powers power) {
+    print('upgraded $power');
+    switch (power) {
+      case Powers.dynamite:
+        numDynamites = possibleUpgradeDepthDynamites;
+        break;
+      case Powers.minecart:
+        numMineCarts = possibleUpgradeDepthMineCarts;
+        break;
+      case Powers.shiv:
+        numShivs = possibleUpgradeDepthShivs;
+        break;
+      case Powers.pickaxe:
+        numPickaxes = possibleUpgradeDepthPickaxes;
+        break;
+      case Powers.lunchbox:
+        numLunchboxes = possibleUpgradeDepthLunchboxes;
+        break;
+      default:
+    }
+    setState(TurnState.turnFinished);
   }
 
   void setState(TurnState state) {
@@ -209,21 +290,33 @@ class AuriferousGame extends FlameGame {
       case TurnState.powerMineCart:
         removePowerButtons();
         tryAdd(doneButton);
+
+        helpfulText.text = 'Click on a die you'
+            'd like to save for a future turn! You have ${numMineCarts - usedMineCarts} remaining!';
       case TurnState.powerShiv:
         removePowerButtons();
         tryAdd(doneButton);
+
+        helpfulText.text =
+            'Not implemented! You have ${numShivs - usedShivs} remaining!';
       case TurnState.powerPickaxe:
         removePowerButtons();
         tryAdd(doneButton);
+
+        helpfulText.text = 'Click on a die you'
+            'd like to bump! You have ${numPickaxes - usedPickaxes} remaining!';
         break;
       case TurnState.sendMinerOrCollectGold:
         removePowerButtons();
         tryAdd(doneButton);
+        positionAndShowAvailableUpgradeButtons();
         helpfulText.text =
             'Choose a mine to send your miner to, or strike gold!';
         break;
       case TurnState.turnFinished:
         tryRemove(doneButton);
+        removeUpgradeButtons();
+        resetPowers();
         helpfulText.text = 'Please wait for your next turn';
         Future.delayed(
             const Duration(seconds: 1), () => setState(TurnState.beforeRoll));
@@ -234,24 +327,32 @@ class AuriferousGame extends FlameGame {
 
   void addAvailablePowerButtons() {
     if (numDynamites > usedDynamites) {
-      add(dynamiteButton);
+      add(useDynamiteButton);
     }
     if (numMineCarts > usedMineCarts) {
-      add(mineCartButton);
+      add(useMineCartButton);
     }
     if (numShivs > usedShivs) {
-      add(shivButton);
+      add(useShivButton);
     }
     if (numPickaxes > usedPickaxes) {
-      add(pickAxeButton);
+      add(usePickaxeButton);
     }
   }
 
   void removePowerButtons() {
-    tryRemove(dynamiteButton);
-    tryRemove(mineCartButton);
-    tryRemove(shivButton);
-    tryRemove(pickAxeButton);
+    tryRemove(useDynamiteButton);
+    tryRemove(useMineCartButton);
+    tryRemove(useShivButton);
+    tryRemove(usePickaxeButton);
+  }
+
+  void removeUpgradeButtons() {
+    tryRemove(upgradeDynamiteButton);
+    tryRemove(upgradeMineCartButton);
+    tryRemove(upgradeShivButton);
+    tryRemove(upgradePickaxeButton);
+    tryRemove(upgradeLunchboxButton);
   }
 
   void tryAdd(Component component) {
@@ -264,6 +365,13 @@ class AuriferousGame extends FlameGame {
     if (children.contains(component)) {
       remove(component);
     }
+  }
+
+  void resetPowers() {
+    usedDynamites = 0;
+    usedMineCarts = 0;
+    usedShivs = 0;
+    usedPickaxes = 0;
   }
 
   donePressed() {
@@ -281,6 +389,90 @@ class AuriferousGame extends FlameGame {
         setState(TurnState.turnFinished);
         break;
       default:
+    }
+  }
+
+  positionAndShowAvailableUpgradeButtons() {
+    final dicePerValue = dicePool.getNumberOfDicePerValue();
+
+    // Dynamite
+    possibleUpgradeDepthDynamites = diceRequiredForDynamiteLevel.keys
+            .where((key) =>
+                diceRequiredForDynamiteLevel[key]! <= (dicePerValue[1] as int))
+            .lastOrNull ??
+        0;
+
+    if (possibleUpgradeDepthDynamites > numDynamites) {
+      upgradeDynamiteButton.position = Vector2(upgradeDynamiteButton.position.x,
+          setUpgradeButtonHeight(possibleUpgradeDepthDynamites));
+      tryAdd(upgradeDynamiteButton);
+    }
+
+    // Minecart
+    possibleUpgradeDepthMineCarts = diceRequiredForMinecartLevel.keys
+            .where((key) =>
+                diceRequiredForMinecartLevel[key]! <= (dicePerValue[2] as int))
+            .lastOrNull ??
+        0;
+
+    if (possibleUpgradeDepthMineCarts > numMineCarts) {
+      upgradeMineCartButton.position = Vector2(upgradeMineCartButton.position.x,
+          setUpgradeButtonHeight(possibleUpgradeDepthMineCarts));
+      tryAdd(upgradeMineCartButton);
+    }
+
+    // Shiv
+    possibleUpgradeDepthShivs = diceRequiredForShivLevel.keys
+            .where((key) =>
+                diceRequiredForShivLevel[key]! <= (dicePerValue[3] as int))
+            .lastOrNull ??
+        0;
+
+    if (possibleUpgradeDepthShivs > numShivs) {
+      upgradeShivButton.position = Vector2(upgradeShivButton.position.x,
+          setUpgradeButtonHeight(possibleUpgradeDepthShivs));
+      tryAdd(upgradeShivButton);
+    }
+
+    // Pickaxe
+    possibleUpgradeDepthPickaxes = diceRequiredForPickaxeLevel.keys
+            .where((key) =>
+                diceRequiredForPickaxeLevel[key]! <= (dicePerValue[4] as int))
+            .lastOrNull ??
+        0;
+
+    if (possibleUpgradeDepthPickaxes > numPickaxes) {
+      upgradePickaxeButton.position = Vector2(upgradePickaxeButton.position.x,
+          setUpgradeButtonHeight(possibleUpgradeDepthPickaxes));
+      tryAdd(upgradePickaxeButton);
+    }
+
+    // Lunchbox
+    possibleUpgradeDepthLunchboxes = diceRequiredForLunchboxLevel.keys
+            .where((key) =>
+                diceRequiredForLunchboxLevel[key]! <= (dicePerValue[5] as int))
+            .lastOrNull ??
+        0;
+
+    if (possibleUpgradeDepthLunchboxes > numLunchboxes) {
+      upgradeLunchboxButton.position = Vector2(upgradeLunchboxButton.position.x,
+          setUpgradeButtonHeight(possibleUpgradeDepthLunchboxes));
+      tryAdd(upgradeLunchboxButton);
+    }
+  }
+
+  double setUpgradeButtonHeight(int highestPossibleTier) {
+    return 200 + (highestPossibleTier - 1) * 60;
+  }
+
+  void saveDieInMineCart(int value) {
+    print('saved a $value in the mine cart!');
+    mineCartDice.add(value);
+    usedMineCarts++;
+    if (turnState == TurnState.powerMineCart && usedDynamites >= numMineCarts) {
+      setState(TurnState.choosePower);
+    } else {
+      setState(TurnState.powerMineCart);
     }
   }
 }

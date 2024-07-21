@@ -14,14 +14,25 @@ class DicePoolComponent extends PositionComponent {
     this.position = position;
   }
 
-  void addDiceByValue(List<int> dice) {
-    for (int i = 0; i < dice.length; i++) {
+  void addDiceByValue(List<int> rolledDice, List<int> mineCartDice) {
+    for (int i = 0; i < rolledDice.length; i++) {
       final die = DieComponent(
-          value: dice[i],
+          value: rolledDice[i],
           position: Vector2((i * 60) % 600, (i / 10).floor() * 60),
           game: game,
           dicePool: this);
-      this.dice.add(die);
+      dice.add(die);
+      add(die);
+    }
+    for (int i = 0; i < mineCartDice.length; i++) {
+      final die = DieComponent(
+          value: mineCartDice[i],
+          position: Vector2(((i + rolledDice.length) * 60) % 600,
+              ((i + rolledDice.length) / 10).floor() * 60),
+          game: game,
+          dicePool: this,
+          isRolling: false);
+      dice.add(die);
       add(die);
     }
   }
@@ -60,5 +71,18 @@ class DicePoolComponent extends PositionComponent {
         dicePool: this);
     dice.add(newDie);
     add(newDie);
+  }
+
+  Map<int, int> getNumberOfDicePerValue() {
+    final Map<int, int> numberOfDicePerValue = {};
+    for (int i = 1; i <= 6; i++) {
+      numberOfDicePerValue[i] = dice.where((d) => d.value == i).length;
+    }
+    return numberOfDicePerValue;
+  }
+
+  void removeDie(DieComponent die) {
+    dice.remove(die);
+    remove(die);
   }
 }
