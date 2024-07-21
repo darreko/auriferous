@@ -211,7 +211,8 @@ class AuriferousGame extends FlameGame {
   void roll() {
     setState(TurnState.rolling);
     final r = Random();
-    final rolledValues = List.generate(5, (x) => r.nextInt(6) + 1);
+    final rolledValues =
+        List.generate(5 + numLunchboxes, (x) => r.nextInt(6) + 1);
     rolledValues.sort();
     dicePool.clear();
     dicePool.addDiceByValue(rolledValues, mineCartDice);
