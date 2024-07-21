@@ -6,7 +6,8 @@ enum TurnState {
   powerMineCart,
   powerShiv,
   powerPickaxe,
-  sendMinerOrCollectGold
+  sendMinerOrCollectGold,
+  turnFinished,
 }
 
 enum Powers { dynamite, minecart, shiv, pickaxe }

@@ -24,6 +24,8 @@ class AuriferousGame extends FlameGame {
   late SpriteButtonComponent shivButton;
   late SpriteButtonComponent pickAxeButton;
 
+  late SpriteButtonComponent doneButton;
+
   int numDynamites = 3;
   int numMineCarts = 3;
   int numShivs = 0;
@@ -133,6 +135,15 @@ class AuriferousGame extends FlameGame {
         position: Vector2(530, 500),
       );
 
+      doneButton = SpriteButtonComponent(
+        button: await loadSprite('done_button.png'),
+        buttonDown: await loadSprite('done_button.png'),
+        onPressed: () => donePressed(),
+        size: Vector2(170, 70),
+        position: Vector2(600, 60),
+      );
+      //add(doneButton);
+
       setState(TurnState.beforeRoll);
     } catch (ex) {
       print('an error: $ex');
@@ -174,7 +185,8 @@ class AuriferousGame extends FlameGame {
 
     switch (state) {
       case TurnState.beforeRoll:
-        add(rollButton);
+        tryAdd(rollButton);
+        tryRemove(doneButton);
         helpfulText.text = 'Roll the dice with the button to the right! -->';
         break;
       case TurnState.rolling:
@@ -183,25 +195,38 @@ class AuriferousGame extends FlameGame {
         break;
       case TurnState.choosePower:
         addAvailablePowerButtons();
+        tryAdd(doneButton);
         helpfulText.text =
             'Choose one of your powers to use at the bottom of the screen!';
         break;
       case TurnState.powerDynamite:
         removePowerButtons();
+        tryAdd(doneButton);
 
         helpfulText.text = 'Click on a die you'
             'd like to reroll! You have ${numDynamites - usedDynamites} remaining!';
 
       case TurnState.powerMineCart:
         removePowerButtons();
+        tryAdd(doneButton);
       case TurnState.powerShiv:
         removePowerButtons();
+        tryAdd(doneButton);
       case TurnState.powerPickaxe:
         removePowerButtons();
+        tryAdd(doneButton);
         break;
       case TurnState.sendMinerOrCollectGold:
+        removePowerButtons();
+        tryAdd(doneButton);
         helpfulText.text =
             'Choose a mine to send your miner to, or strike gold!';
+        break;
+      case TurnState.turnFinished:
+        tryRemove(doneButton);
+        helpfulText.text = 'Please wait for your next turn';
+        Future.delayed(
+            const Duration(seconds: 1), () => setState(TurnState.beforeRoll));
         break;
       default:
     }
@@ -229,9 +254,33 @@ class AuriferousGame extends FlameGame {
     tryRemove(pickAxeButton);
   }
 
+  void tryAdd(Component component) {
+    if (!children.contains(component)) {
+      add(component);
+    }
+  }
+
   void tryRemove(Component component) {
     if (children.contains(component)) {
       remove(component);
+    }
+  }
+
+  donePressed() {
+    switch (turnState) {
+      case TurnState.powerDynamite:
+      case TurnState.powerMineCart:
+      case TurnState.powerShiv:
+      case TurnState.powerPickaxe:
+        setState(TurnState.choosePower);
+        break;
+      case TurnState.choosePower:
+        setState(TurnState.sendMinerOrCollectGold);
+        break;
+      case TurnState.sendMinerOrCollectGold:
+        setState(TurnState.turnFinished);
+        break;
+      default:
     }
   }
 }
