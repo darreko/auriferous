@@ -25,33 +25,100 @@ class AuriferousGame extends FlameGame {
   late SpriteButtonComponent useShivButton;
   late SpriteButtonComponent usePickaxeButton;
 
-  late SpriteButtonComponent upgradeDynamiteButton;
-  late SpriteButtonComponent upgradeMineCartButton;
-  late SpriteButtonComponent upgradeShivButton;
-  late SpriteButtonComponent upgradePickaxeButton;
-  late SpriteButtonComponent upgradeLunchboxButton;
+  static late SpriteButtonComponent upgradeDynamiteButton;
+  static late SpriteButtonComponent upgradeMineCartButton;
+  static late SpriteButtonComponent upgradeShivButton;
+  static late SpriteButtonComponent upgradePickaxeButton;
+  static late SpriteButtonComponent upgradeLunchboxButton;
+
+  late Map<int, SpriteButtonComponent> upgradeButtonByDieValue;
 
   late SpriteButtonComponent doneButton;
   late SpriteButtonComponent strikeGoldButton;
 
-  Map<int, int> diceRequiredForDynamiteLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
-  Map<int, int> diceRequiredForMinecartLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
-  Map<int, int> diceRequiredForShivLevel = {1: 1, 2: 3, 3: 5, 4: 7, 5: 10};
-  Map<int, int> diceRequiredForPickaxeLevel = {1: 1, 2: 2, 3: 4, 4: 7, 5: 10};
-  Map<int, int> diceRequiredForLunchboxLevel = {1: 2, 2: 4, 3: 6, 4: 8, 5: 10};
+  static const Map<int, int> diceRequiredForDynamiteLevel = {
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5
+  };
+  static const Map<int, int> diceRequiredForMinecartLevel = {
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5
+  };
+  static const Map<int, int> diceRequiredForShivLevel = {
+    1: 1,
+    2: 3,
+    3: 5,
+    4: 7,
+    5: 10
+  };
+  static const Map<int, int> diceRequiredForPickaxeLevel = {
+    1: 1,
+    2: 2,
+    3: 4,
+    4: 7,
+    5: 10
+  };
+  static const Map<int, int> diceRequiredForLunchboxLevel = {
+    1: 2,
+    2: 4,
+    3: 6,
+    4: 8,
+    5: 10
+  };
   Map<int, int> goldPerDie = {1: 1, 2: 2, 3: 3, 4: 5, 5: 7, 6: 10};
 
-  int possibleUpgradeDepthDynamites = 0;
-  int possibleUpgradeDepthMineCarts = 0;
-  int possibleUpgradeDepthShivs = 0;
-  int possibleUpgradeDepthPickaxes = 0;
-  int possibleUpgradeDepthLunchboxes = 0;
+  Map<int, Map<int, int>> diceRequiredForLevelByDieValue = {
+    1: diceRequiredForDynamiteLevel,
+    2: diceRequiredForMinecartLevel,
+    3: diceRequiredForShivLevel,
+    4: diceRequiredForMinecartLevel,
+    5: diceRequiredForLunchboxLevel
+  };
 
-  int numDynamites = 0;
-  int numMineCarts = 0;
-  int numShivs = 0;
-  int numPickaxes = 0;
-  int numLunchboxes = 0;
+  Map<int, int> possibleUpgradeDepthsByDieValue = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0
+  };
+
+  int get possibleUpgradeDepthDynamites => possibleUpgradeDepthsByDieValue[1]!;
+  int get possibleUpgradeDepthMineCarts => possibleUpgradeDepthsByDieValue[2]!;
+  int get possibleUpgradeDepthShivs => possibleUpgradeDepthsByDieValue[3]!;
+  int get possibleUpgradeDepthPickaxes => possibleUpgradeDepthsByDieValue[4]!;
+  int get possibleUpgradeDepthLunchboxes => possibleUpgradeDepthsByDieValue[5]!;
+
+  set possibleUpgradeDepthDynamites(int depth) =>
+      possibleUpgradeDepthsByDieValue[1] = depth;
+  set possibleUpgradeDepthMineCarts(int depth) =>
+      possibleUpgradeDepthsByDieValue[2] = depth;
+  set possibleUpgradeDepthShivs(int depth) =>
+      possibleUpgradeDepthsByDieValue[3] = depth;
+  set possibleUpgradeDepthPickaxes(int depth) =>
+      possibleUpgradeDepthsByDieValue[4] = depth;
+  set possibleUpgradeDepthLunchboxes(int depth) =>
+      possibleUpgradeDepthsByDieValue[5] = depth;
+
+  int get numDynamites => numPowerByDieValue[1]!;
+  int get numMineCarts => numPowerByDieValue[2]!;
+  int get numShivs => numPowerByDieValue[3]!;
+  int get numPickaxes => numPowerByDieValue[4]!;
+  int get numLunchboxes => numPowerByDieValue[5]!;
+
+  set numDynamites(int num) => numPowerByDieValue[1] = num;
+  set numMineCarts(int num) => numPowerByDieValue[2] = num;
+  set numShivs(int num) => numPowerByDieValue[3] = num;
+  set numPickaxes(int num) => numPowerByDieValue[4] = num;
+  set numLunchboxes(int num) => numPowerByDieValue[5] = num;
+
+  Map<int, int> numPowerByDieValue = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
 
   int usedDynamites = 0;
   int usedMineCarts = 0;
@@ -202,6 +269,14 @@ class AuriferousGame extends FlameGame {
         size: Vector2(170, 70),
         position: Vector2(700, 200),
       );
+
+      upgradeButtonByDieValue = {
+        1: upgradeDynamiteButton,
+        2: upgradeMineCartButton,
+        3: upgradeShivButton,
+        4: upgradePickaxeButton,
+        5: upgradeLunchboxButton
+      };
 
       doneButton = SpriteButtonComponent(
         button: await loadSprite('done_button.png'),
@@ -409,69 +484,22 @@ class AuriferousGame extends FlameGame {
   positionAndShowAvailableUpgradeButtons() {
     final dicePerValue = dicePool.getNumberOfDicePerValue();
 
-    // Dynamite
-    possibleUpgradeDepthDynamites = diceRequiredForDynamiteLevel.keys
-            .where((key) =>
-                diceRequiredForDynamiteLevel[key]! <= (dicePerValue[1] as int))
-            .lastOrNull ??
-        0;
+    // For each die value, check and see if we should show an upgrade
+    for (var i = 1; i <= 5; i++) {
+      possibleUpgradeDepthsByDieValue[i] = diceRequiredForLevelByDieValue[i]!
+              .keys
+              .where((key) =>
+                  diceRequiredForLevelByDieValue[i]![key]! <=
+                  (dicePerValue[i] as int))
+              .lastOrNull ??
+          0;
 
-    if (possibleUpgradeDepthDynamites > numDynamites) {
-      upgradeDynamiteButton.position = Vector2(upgradeDynamiteButton.position.x,
-          setUpgradeButtonHeight(possibleUpgradeDepthDynamites));
-      tryAdd(upgradeDynamiteButton);
-    }
-
-    // Minecart
-    possibleUpgradeDepthMineCarts = diceRequiredForMinecartLevel.keys
-            .where((key) =>
-                diceRequiredForMinecartLevel[key]! <= (dicePerValue[2] as int))
-            .lastOrNull ??
-        0;
-
-    if (possibleUpgradeDepthMineCarts > numMineCarts) {
-      upgradeMineCartButton.position = Vector2(upgradeMineCartButton.position.x,
-          setUpgradeButtonHeight(possibleUpgradeDepthMineCarts));
-      tryAdd(upgradeMineCartButton);
-    }
-
-    // Shiv
-    possibleUpgradeDepthShivs = diceRequiredForShivLevel.keys
-            .where((key) =>
-                diceRequiredForShivLevel[key]! <= (dicePerValue[3] as int))
-            .lastOrNull ??
-        0;
-
-    if (possibleUpgradeDepthShivs > numShivs) {
-      upgradeShivButton.position = Vector2(upgradeShivButton.position.x,
-          setUpgradeButtonHeight(possibleUpgradeDepthShivs));
-      tryAdd(upgradeShivButton);
-    }
-
-    // Pickaxe
-    possibleUpgradeDepthPickaxes = diceRequiredForPickaxeLevel.keys
-            .where((key) =>
-                diceRequiredForPickaxeLevel[key]! <= (dicePerValue[4] as int))
-            .lastOrNull ??
-        0;
-
-    if (possibleUpgradeDepthPickaxes > numPickaxes) {
-      upgradePickaxeButton.position = Vector2(upgradePickaxeButton.position.x,
-          setUpgradeButtonHeight(possibleUpgradeDepthPickaxes));
-      tryAdd(upgradePickaxeButton);
-    }
-
-    // Lunchbox
-    possibleUpgradeDepthLunchboxes = diceRequiredForLunchboxLevel.keys
-            .where((key) =>
-                diceRequiredForLunchboxLevel[key]! <= (dicePerValue[5] as int))
-            .lastOrNull ??
-        0;
-
-    if (possibleUpgradeDepthLunchboxes > numLunchboxes) {
-      upgradeLunchboxButton.position = Vector2(upgradeLunchboxButton.position.x,
-          setUpgradeButtonHeight(possibleUpgradeDepthLunchboxes));
-      tryAdd(upgradeLunchboxButton);
+      if (possibleUpgradeDepthsByDieValue[i]! > numPowerByDieValue[i]!) {
+        upgradeButtonByDieValue[i]!.position = Vector2(
+            upgradeButtonByDieValue[i]!.position.x,
+            setUpgradeButtonHeight(possibleUpgradeDepthsByDieValue[i]!));
+        tryAdd(upgradeButtonByDieValue[i]!);
+      }
     }
   }
 
