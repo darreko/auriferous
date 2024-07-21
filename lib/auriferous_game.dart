@@ -13,6 +13,7 @@ class AuriferousGame extends FlameGame {
   late SpriteComponent board;
   late SpriteComponent dwarf;
   late TextComponent goldCountText;
+  int goldCount = 0;
   late TextComponent helpfulText;
 
   late DicePoolComponent dicePool;
@@ -31,12 +32,14 @@ class AuriferousGame extends FlameGame {
   late SpriteButtonComponent upgradeLunchboxButton;
 
   late SpriteButtonComponent doneButton;
+  late SpriteButtonComponent strikeGoldButton;
 
   Map<int, int> diceRequiredForDynamiteLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
   Map<int, int> diceRequiredForMinecartLevel = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5};
   Map<int, int> diceRequiredForShivLevel = {1: 1, 2: 3, 3: 5, 4: 7, 5: 10};
   Map<int, int> diceRequiredForPickaxeLevel = {1: 1, 2: 2, 3: 4, 4: 7, 5: 10};
   Map<int, int> diceRequiredForLunchboxLevel = {1: 2, 2: 4, 3: 6, 4: 8, 5: 10};
+  Map<int, int> goldPerDie = {1: 1, 2: 2, 3: 3, 4: 5, 5: 7, 6: 10};
 
   int possibleUpgradeDepthDynamites = 0;
   int possibleUpgradeDepthMineCarts = 0;
@@ -84,7 +87,7 @@ class AuriferousGame extends FlameGame {
       add(board);
 
       goldCountText = TextComponent(
-        text: 'Gold: 0',
+        text: 'Gold: $goldCount',
         position: Vector2(0, 0),
         size: Vector2(guiSize.x / 10, guiSize.y),
       );
@@ -111,7 +114,14 @@ class AuriferousGame extends FlameGame {
         position: Vector2((guiSize.x / 10) * 9, 0),
         size: Vector2(guiSize.x / 10, guiSize.y),
       );
-      // add(rollButton);
+
+      strikeGoldButton = SpriteButtonComponent(
+        button: await loadSprite('strike_gold.png'),
+        buttonDown: await loadSprite('strike_gold.png'),
+        onPressed: () => strikeGold(),
+        position: Vector2((guiSize.x / 10) * 9, 0),
+        size: Vector2(guiSize.x / 10, guiSize.y),
+      );
 
       dwarf = SpriteComponent(
         position: Vector2(10, 20),
@@ -310,15 +320,18 @@ class AuriferousGame extends FlameGame {
       case TurnState.sendMinerOrCollectGold:
         removePowerButtons();
         tryAdd(doneButton);
+        tryAdd(strikeGoldButton);
         positionAndShowAvailableUpgradeButtons();
         helpfulText.text =
             'Choose a mine to send your miner to, or strike gold!';
         break;
       case TurnState.turnFinished:
         tryRemove(doneButton);
+        tryRemove(strikeGoldButton);
         removeUpgradeButtons();
         resetPowers();
         helpfulText.text = 'Please wait for your next turn';
+        goldCountText.text = 'Gold: $goldCount';
         Future.delayed(
             const Duration(seconds: 1), () => setState(TurnState.beforeRoll));
         break;
@@ -470,10 +483,29 @@ class AuriferousGame extends FlameGame {
     print('saved a $value in the mine cart!');
     mineCartDice.add(value);
     usedMineCarts++;
-    if (turnState == TurnState.powerMineCart && usedDynamites >= numMineCarts) {
+    if (turnState == TurnState.powerMineCart && usedMineCarts >= numMineCarts) {
       setState(TurnState.choosePower);
     } else {
       setState(TurnState.powerMineCart);
     }
+  }
+
+  strikeGold() {
+    final dicePerValue = dicePool.getNumberOfDicePerValue();
+    final numSixes = dicePerValue[6]!;
+    final int add;
+
+    if (numSixes == 0) {
+      add = 0;
+    } else if (numSixes <= goldPerDie.length) {
+      add = goldPerDie[numSixes]!;
+      goldCount += add;
+    } else {
+      add =
+          goldPerDie[goldPerDie.length]! + ((numSixes - goldPerDie.length) * 3);
+      goldCount += add;
+    }
+    print('striking $add gold from $numSixes sixes');
+    setState(TurnState.turnFinished);
   }
 }
