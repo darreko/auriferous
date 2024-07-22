@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:auriferous/auriferous_game.dart';
@@ -11,8 +10,12 @@ import 'package:flame/input.dart';
 class DieComponent extends PositionComponent {
   late AuriferousGame game;
   late DicePoolComponent dicePool;
-  Map<int, Sprite> dieSprites = Map();
+  Map<int, Sprite> dieSprites = {};
   late SpriteButtonComponent dieSpriteButtonComponent;
+  late SpriteButtonComponent bumpUpSpriteButtonComponent =
+      SpriteButtonComponent();
+  late SpriteButtonComponent bumpDownSpriteButtonComponent =
+      SpriteButtonComponent();
   int value = 1;
   bool isRolling = true;
   double rollSpeed = Random().nextDouble() * 2 + 4;
@@ -33,17 +36,31 @@ class DieComponent extends PositionComponent {
     // }
 
     final sprite = await Sprite.load('dice-six-faces-$value.png');
+    final upSprite = await Sprite.load('plain-arrow-up.png');
+    final downSprite = await Sprite.load('plain-arrow-down.png');
 
-    dieSpriteButtonComponent =
-        // SpriteComponent(sprite: dieSprites[value], size: Vector2.all(50));
-        SpriteButtonComponent(
-            button: sprite,
-            buttonDown: sprite,
-            onPressed: () => onPressedDie(),
-            size: Vector2.all(50),
-            position: Vector2(25, 25),
-            anchor: Anchor.center);
+    dieSpriteButtonComponent = SpriteButtonComponent(
+        button: sprite,
+        buttonDown: sprite,
+        onPressed: () => onPressedDie(),
+        size: Vector2.all(50),
+        position: Vector2(25, 25),
+        anchor: Anchor.center);
     add(dieSpriteButtonComponent);
+
+    bumpUpSpriteButtonComponent = SpriteButtonComponent(
+        button: upSprite,
+        buttonDown: upSprite,
+        onPressed: () => onPressedBump(up: true),
+        size: Vector2.all(20),
+        position: Vector2(15, 0));
+
+    bumpDownSpriteButtonComponent = SpriteButtonComponent(
+        button: downSprite,
+        buttonDown: downSprite,
+        onPressed: () => onPressedBump(up: false),
+        size: Vector2.all(20),
+        position: Vector2(15, 40));
 
     return super.onLoad();
   }
@@ -63,6 +80,28 @@ class DieComponent extends PositionComponent {
     super.update(dt);
   }
 
+  void tryAdd(Component component) {
+    if (!children.contains(component)) {
+      add(component);
+    }
+  }
+
+  void tryRemove(Component component) {
+    if (children.contains(component)) {
+      remove(component);
+    }
+  }
+
+  showBumpButtons(bool show) {
+    if (show) {
+      tryAdd(bumpUpSpriteButtonComponent);
+      tryAdd(bumpDownSpriteButtonComponent);
+    } else {
+      tryRemove(bumpUpSpriteButtonComponent);
+      tryRemove(bumpDownSpriteButtonComponent);
+    }
+  }
+
   onPressedDie() {
     print('pressed on die $value');
     switch (game.turnState) {
@@ -74,6 +113,14 @@ class DieComponent extends PositionComponent {
         dicePool.removeDie(this);
         break;
       default:
+    }
+  }
+
+  onPressedBump({required bool up}) {
+    print('bumped the $value ${up ? 'up' : 'down'}');
+
+    if ((up && value < 6) || !up && value > 1) {
+      dicePool.bumpDie(this, up);
     }
   }
 }

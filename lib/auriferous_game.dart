@@ -363,6 +363,11 @@ class AuriferousGame extends FlameGame {
       case TurnState.choosePower:
         addAvailablePowerButtons();
         tryAdd(doneButton);
+
+        for (var x in dicePool.dice) {
+          x.showBumpButtons(false);
+        }
+
         helpfulText.text =
             'Choose one of your powers to use at the bottom of the screen!';
         break;
@@ -389,6 +394,10 @@ class AuriferousGame extends FlameGame {
         removePowerButtons();
         tryAdd(doneButton);
 
+        for (var x in dicePool.dice) {
+          x.showBumpButtons(true);
+        }
+
         helpfulText.text = 'Click on a die you'
             'd like to bump! You have ${numPickaxes - usedPickaxes} remaining!';
         break;
@@ -405,6 +414,7 @@ class AuriferousGame extends FlameGame {
         tryRemove(strikeGoldButton);
         removeUpgradeButtons();
         resetPowers();
+        dicePool.clear();
         helpfulText.text = 'Please wait for your next turn';
         goldCountText.text = 'Gold: $goldCount';
         Future.delayed(

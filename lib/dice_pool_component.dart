@@ -85,4 +85,24 @@ class DicePoolComponent extends PositionComponent {
     dice.remove(die);
     remove(die);
   }
+
+  void bumpDie(DieComponent die, bool up) {
+    dice.remove(die);
+    remove(die);
+    final newDie = DieComponent(
+        value: up ? die.value + 1 : die.value - 1,
+        position: die.position,
+        game: game,
+        dicePool: this);
+    dice.add(newDie);
+    add(newDie);
+
+    game.usedPickaxes++;
+    if (game.turnState == TurnState.powerPickaxe &&
+        game.usedPickaxes >= game.numPickaxes) {
+      game.setState(TurnState.choosePower);
+    } else {
+      game.setState(TurnState.powerPickaxe);
+    }
+  }
 }
