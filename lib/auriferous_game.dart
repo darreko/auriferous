@@ -361,7 +361,10 @@ class AuriferousGame extends FlameGame {
         helpfulText.text = 'Look at them dice babay!';
         break;
       case TurnState.choosePower:
-        addAvailablePowerButtons();
+        if (!addAvailablePowerButtons()) {
+          setState(TurnState.sendMinerOrCollectGold);
+          break;
+        }
         tryAdd(doneButton);
 
         for (var x in dicePool.dice) {
@@ -424,19 +427,27 @@ class AuriferousGame extends FlameGame {
     }
   }
 
-  void addAvailablePowerButtons() {
+  bool addAvailablePowerButtons() {
+    int numPowersAvailable = 0;
+
     if (numDynamites > usedDynamites) {
-      add(useDynamiteButton);
+      tryAdd(useDynamiteButton);
+      numPowersAvailable++;
     }
     if (numMineCarts > usedMineCarts) {
-      add(useMineCartButton);
+      tryAdd(useMineCartButton);
+      numPowersAvailable++;
     }
     if (numShivs > usedShivs) {
-      add(useShivButton);
+      tryAdd(useShivButton);
+      numPowersAvailable++;
     }
     if (numPickaxes > usedPickaxes) {
-      add(usePickaxeButton);
+      tryAdd(usePickaxeButton);
+      numPowersAvailable++;
     }
+
+    return numPowersAvailable > 0;
   }
 
   void removePowerButtons() {
