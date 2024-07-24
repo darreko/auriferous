@@ -16,37 +16,44 @@ class DieComponent extends PositionComponent {
       SpriteButtonComponent();
   late SpriteButtonComponent bumpDownSpriteButtonComponent =
       SpriteButtonComponent();
-  int value = 1;
-  bool isRolling = true;
+  int _value = 1;
+  int get value => _value;
+  bool _isRolling = true;
+  bool get isRolling => _isRolling;
+  set isRolling(bool r) {
+    _isRolling = r;
+    dieSpriteButtonComponent.angle = 0;
+  }
+
   double rollSpeed = Random().nextDouble() * 2 + 4;
 
   DieComponent(
-      {required this.value,
+      {required value,
       required Vector2 position,
       required this.game,
       required this.dicePool,
-      this.isRolling = true}) {
+      bool isRolling = true}) {
+    _value = value;
     this.position = position;
+    _isRolling = isRolling;
   }
 
   @override
   FutureOr<void> onLoad() async {
-    // for (int i = 1; i < 6; i++) {
-    //   dieSprites[i] = await Sprite.load('dice-six-faces-$i.png');
-    // }
-
-    final sprite = await Sprite.load('dice-six-faces-$value.png');
+    for (int i = 1; i <= 6; i++) {
+      dieSprites[i] = await Sprite.load('dice-six-faces-$i.png');
+    }
     final upSprite = await Sprite.load('plain-arrow-up.png');
     final downSprite = await Sprite.load('plain-arrow-down.png');
 
     dieSpriteButtonComponent = SpriteButtonComponent(
-        button: sprite,
-        buttonDown: sprite,
+        button: dieSprites[_value],
+        buttonDown: dieSprites[_value],
         onPressed: () => onPressedDie(),
         size: Vector2.all(50),
         position: Vector2(25, 25),
         anchor: Anchor.center);
-    add(dieSpriteButtonComponent);
+    tryAdd(dieSpriteButtonComponent);
 
     bumpUpSpriteButtonComponent = SpriteButtonComponent(
         button: upSprite,
@@ -94,12 +101,32 @@ class DieComponent extends PositionComponent {
 
   showBumpButtons(bool show) {
     if (show) {
-      tryAdd(bumpUpSpriteButtonComponent);
-      tryAdd(bumpDownSpriteButtonComponent);
+      if (value < 6) {
+        tryAdd(bumpUpSpriteButtonComponent);
+      }
+      if (value > 1) {
+        tryAdd(bumpDownSpriteButtonComponent);
+      }
     } else {
       tryRemove(bumpUpSpriteButtonComponent);
       tryRemove(bumpDownSpriteButtonComponent);
     }
+  }
+
+  setValue(int value, bool rolling) {
+    _value = value;
+    isRolling = rolling;
+    showBumpButtons(game.turnState == TurnState.powerPickaxe);
+
+    tryRemove(dieSpriteButtonComponent);
+    dieSpriteButtonComponent = SpriteButtonComponent(
+        button: dieSprites[value],
+        buttonDown: dieSprites[value],
+        onPressed: () => onPressedDie(),
+        size: Vector2.all(50),
+        position: Vector2(25, 25),
+        anchor: Anchor.center);
+    tryAdd(dieSpriteButtonComponent);
   }
 
   onPressedDie() {

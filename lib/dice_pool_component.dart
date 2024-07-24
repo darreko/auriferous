@@ -61,22 +61,15 @@ class DicePoolComponent extends PositionComponent {
       game.setState(TurnState.powerDynamite);
     }
 
-    dice.remove(die);
-    remove(die);
-
-    final newDie = DieComponent(
-        value: Random().nextInt(6) + 1,
-        position: die.position,
-        game: game,
-        dicePool: this);
-    dice.add(newDie);
-    add(newDie);
+    die.setValue(Random().nextInt(6) + 1, true);
   }
 
   Map<int, int> getNumberOfDicePerValue() {
     final Map<int, int> numberOfDicePerValue = {};
     for (int i = 1; i <= 6; i++) {
       numberOfDicePerValue[i] = dice.where((d) => d.value == i).length;
+
+      print('You have ${numberOfDicePerValue[i]} $i s');
     }
     return numberOfDicePerValue;
   }
@@ -87,15 +80,7 @@ class DicePoolComponent extends PositionComponent {
   }
 
   void bumpDie(DieComponent die, bool up) {
-    dice.remove(die);
-    remove(die);
-    final newDie = DieComponent(
-        value: up ? die.value + 1 : die.value - 1,
-        position: die.position,
-        game: game,
-        dicePool: this);
-    dice.add(newDie);
-    add(newDie);
+    die.setValue(up ? die.value + 1 : die.value - 1, true);
 
     game.usedPickaxes++;
     if (game.turnState == TurnState.powerPickaxe &&

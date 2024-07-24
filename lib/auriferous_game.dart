@@ -77,7 +77,7 @@ class AuriferousGame extends FlameGame {
     1: diceRequiredForDynamiteLevel,
     2: diceRequiredForMinecartLevel,
     3: diceRequiredForShivLevel,
-    4: diceRequiredForMinecartLevel,
+    4: diceRequiredForPickaxeLevel,
     5: diceRequiredForLunchboxLevel
   };
 
@@ -361,15 +361,15 @@ class AuriferousGame extends FlameGame {
         helpfulText.text = 'Look at them dice babay!';
         break;
       case TurnState.choosePower:
+        for (var x in dicePool.dice) {
+          x.showBumpButtons(false);
+        }
+
         if (!addAvailablePowerButtons()) {
           setState(TurnState.sendMinerOrCollectGold);
           break;
         }
         tryAdd(doneButton);
-
-        for (var x in dicePool.dice) {
-          x.showBumpButtons(false);
-        }
 
         helpfulText.text =
             'Choose one of your powers to use at the bottom of the screen!';
