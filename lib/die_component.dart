@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:auriferous/auriferous_game.dart';
 import 'package:auriferous/dice_pool_component.dart';
 import 'package:auriferous/enums.dart';
+import 'package:auriferous/player_board.dart';
 import 'package:flame/components.dart';
 import 'package:flame/input.dart';
 
 class DieComponent extends PositionComponent {
-  late AuriferousGame game;
+  late PlayerBoard playerBoard;
   late DicePoolComponent dicePool;
   Map<int, Sprite> dieSprites = {};
   late SpriteButtonComponent dieSpriteButtonComponent;
@@ -30,7 +30,7 @@ class DieComponent extends PositionComponent {
   DieComponent(
       {required value,
       required Vector2 position,
-      required this.game,
+      required this.playerBoard,
       required this.dicePool,
       bool isRolling = true}) {
     _value = value;
@@ -116,7 +116,7 @@ class DieComponent extends PositionComponent {
   setValue(int value, bool rolling) {
     _value = value;
     isRolling = rolling;
-    showBumpButtons(game.turnState == TurnState.powerPickaxe);
+    showBumpButtons(playerBoard.player.turnState == TurnState.powerPickaxe);
 
     tryRemove(dieSpriteButtonComponent);
     dieSpriteButtonComponent = SpriteButtonComponent(
@@ -131,12 +131,12 @@ class DieComponent extends PositionComponent {
 
   onPressedDie() {
     print('pressed on die $value');
-    switch (game.turnState) {
+    switch (playerBoard.player.turnState) {
       case TurnState.powerDynamite:
         dicePool.reroll(this);
         break;
       case TurnState.powerMineCart:
-        game.saveDieInMineCart(value);
+        playerBoard.saveDieInMineCart(value);
         dicePool.removeDie(this);
         break;
       default:

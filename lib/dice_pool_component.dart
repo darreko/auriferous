@@ -1,16 +1,18 @@
 import 'dart:math';
 
-import 'package:auriferous/auriferous_game.dart';
 import 'package:auriferous/die_component.dart';
 import 'package:auriferous/enums.dart';
+import 'package:auriferous/player_board.dart';
 import 'package:flame/components.dart';
 
 class DicePoolComponent extends PositionComponent {
   List<DieComponent> dice = <DieComponent>[];
-  late AuriferousGame game;
+  late PlayerBoard playerBoard;
 
   DicePoolComponent(
-      {required Vector2 position, required Vector2 size, required this.game}) {
+      {required Vector2 position,
+      required Vector2 size,
+      required this.playerBoard}) {
     this.position = position;
   }
 
@@ -19,7 +21,7 @@ class DicePoolComponent extends PositionComponent {
       final die = DieComponent(
           value: rolledDice[i],
           position: Vector2((i * 60) % 600, (i / 10).floor() * 60),
-          game: game,
+          playerBoard: playerBoard,
           dicePool: this);
       dice.add(die);
       add(die);
@@ -29,7 +31,7 @@ class DicePoolComponent extends PositionComponent {
           value: mineCartDice[i],
           position: Vector2(((i + rolledDice.length) * 60) % 600,
               ((i + rolledDice.length) / 10).floor() * 60),
-          game: game,
+          playerBoard: playerBoard,
           dicePool: this,
           isRolling: false);
       dice.add(die);
@@ -44,21 +46,21 @@ class DicePoolComponent extends PositionComponent {
 
   @override
   void update(double dt) {
-    if (game.turnState == TurnState.rolling &&
+    if (playerBoard.player.turnState == TurnState.rolling &&
         !dice.any((die) => die.isRolling)) {
-      game.setState(TurnState.choosePower);
+      playerBoard.setState(TurnState.choosePower);
     }
 
     super.update(dt);
   }
 
   void reroll(DieComponent die) {
-    game.usedDynamites++;
-    if (game.turnState == TurnState.powerDynamite &&
-        game.usedDynamites >= game.numDynamites) {
-      game.setState(TurnState.choosePower);
+    playerBoard.player.usedDynamites++;
+    if (playerBoard.player.turnState == TurnState.powerDynamite &&
+        playerBoard.player.usedDynamites >= playerBoard.player.numDynamites) {
+      playerBoard.setState(TurnState.choosePower);
     } else {
-      game.setState(TurnState.powerDynamite);
+      playerBoard.setState(TurnState.powerDynamite);
     }
 
     die.setValue(Random().nextInt(6) + 1, true);
@@ -82,12 +84,12 @@ class DicePoolComponent extends PositionComponent {
   void bumpDie(DieComponent die, bool up) {
     die.setValue(up ? die.value + 1 : die.value - 1, true);
 
-    game.usedPickaxes++;
-    if (game.turnState == TurnState.powerPickaxe &&
-        game.usedPickaxes >= game.numPickaxes) {
-      game.setState(TurnState.choosePower);
+    playerBoard.player.usedPickaxes++;
+    if (playerBoard.player.turnState == TurnState.powerPickaxe &&
+        playerBoard.player.usedPickaxes >= playerBoard.player.numPickaxes) {
+      playerBoard.setState(TurnState.choosePower);
     } else {
-      game.setState(TurnState.powerPickaxe);
+      playerBoard.setState(TurnState.powerPickaxe);
     }
   }
 }
