@@ -52,7 +52,8 @@ class DieComponent extends PositionComponent {
         onPressed: () => onPressedDie(),
         size: Vector2.all(50),
         position: Vector2(25, 25),
-        anchor: Anchor.center);
+        anchor: Anchor.center,
+        priority: 1);
     tryAdd(dieSpriteButtonComponent);
 
     bumpUpSpriteButtonComponent = SpriteButtonComponent(
@@ -60,14 +61,16 @@ class DieComponent extends PositionComponent {
         buttonDown: upSprite,
         onPressed: () => onPressedBump(up: true),
         size: Vector2.all(20),
-        position: Vector2(15, 0));
+        position: Vector2(15 + 20, 0),
+        priority: 2);
 
     bumpDownSpriteButtonComponent = SpriteButtonComponent(
         button: downSprite,
         buttonDown: downSprite,
         onPressed: () => onPressedBump(up: false),
         size: Vector2.all(20),
-        position: Vector2(15, 40));
+        position: Vector2(15, 40),
+        priority: 3);
 
     return super.onLoad();
   }
@@ -101,12 +104,13 @@ class DieComponent extends PositionComponent {
 
   showBumpButtons(bool show) {
     if (show) {
-      if (value < 6) {
-        tryAdd(bumpUpSpriteButtonComponent);
-      }
-      if (value > 1) {
-        tryAdd(bumpDownSpriteButtonComponent);
-      }
+      value < 6
+          ? tryAdd(bumpUpSpriteButtonComponent)
+          : tryRemove(bumpUpSpriteButtonComponent);
+
+      value > 1
+          ? tryAdd(bumpDownSpriteButtonComponent)
+          : tryRemove(bumpDownSpriteButtonComponent);
     } else {
       tryRemove(bumpUpSpriteButtonComponent);
       tryRemove(bumpDownSpriteButtonComponent);

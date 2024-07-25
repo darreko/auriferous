@@ -1,3 +1,5 @@
+const int dicePerRoll = 5;
+
 const Map<int, int> diceRequiredForDynamiteLevel = {
   1: 1,
   2: 2,

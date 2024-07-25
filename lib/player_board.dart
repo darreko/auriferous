@@ -203,8 +203,8 @@ class PlayerBoard extends PositionComponent {
   void roll() {
     setState(TurnState.rolling);
     final r = Random();
-    final rolledValues =
-        List.generate(5 + player.numLunchboxes, (x) => r.nextInt(6) + 1);
+    final rolledValues = List.generate(
+        dicePerRoll + player.numLunchboxes, (x) => r.nextInt(6) + 1);
     rolledValues.sort();
     dicePool.clear();
     dicePool.addDiceByValue(rolledValues, player.mineCartDice);
